@@ -23,7 +23,11 @@ def teste_pullrequest(pr_number):
             body
             state
             merged
-            mergeable
+            additions
+            deletions
+            comments {
+              totalCount
+            }
             reviews(first: 10) {
               nodes {
                 body
@@ -124,11 +128,11 @@ if response.status_code == 200:
             print(f"Autor: {node['author']['name']} ({node['author']['email']})")
             print(f"Mensagem: {node['messageHeadline']}")
             print(f"Link para o pull request: https://github.com/microsoft/vscode/pull/{node['associatedPullRequests']['nodes'][0]['number']}")
-            teste_pullrequest(node['associatedPullRequests']['nodes'][0]['number'])
             check_run = check_suite['checkRuns']['nodes'][0]
             print(f"Status do pipeline: {check_run['status']}")
             print(f"Conclusão do pipeline: {check_run['conclusion']}")
             print(f"Link para o registro do pipeline: {check_run['detailsUrl']}")
+            teste_pullrequest(node['associatedPullRequests']['nodes'][0]['number'])
             print()
 else:
     print("Erro na requisição: ", response.status_code)

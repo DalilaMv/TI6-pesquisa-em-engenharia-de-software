@@ -19,6 +19,7 @@ def get_time_diff(start_time, end_time):
     diff_minutes //= 60
     return "{:.0f}h{:02.0f}m".format(diff_hours, diff_minutes)
 
+
 def get_build_fix_efficiency(nameWithOwner, linhas):
     num_fixed_instantly = 0
     num_build_failure = 0
@@ -27,48 +28,52 @@ def get_build_fix_efficiency(nameWithOwner, linhas):
     for i, linha in enumerate(linhas):
         num_total_builds += 1
         if linha[1] == "failure":
-            num_build_failure +=1 
+            num_build_failure += 1
             next_row = linhas[i+1]
-            if next_row[1] == "success" and previous_row[1] == "success": 
+            if next_row[1] == "success" and previous_row[1] == "success":
                 num_fixed_instantly += 1
         previous_row = linha
 
     num_not_fixed_instantly = num_build_failure - num_fixed_instantly
 
-    row_data = [nameWithOwner, num_total_builds, num_build_failure, num_fixed_instantly, num_not_fixed_instantly]
+    row_data = [nameWithOwner, num_total_builds, num_build_failure,
+                num_fixed_instantly, num_not_fixed_instantly]
     with open('csv3_build_efficiency.csv', mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(row_data)
-            
+
     return
 
+
 def get_intervalos(nameWithOwner, linhas):
-    
+
     failed_id = None
-    failed_time = None 
-    
+    failed_time = None
+
     for i, linha in enumerate(linhas):
         # 0 - id, 1 - status, 2 - data/hora
         if linha[1] == "failure" and failed_id == None:
             failed_id = linha[0]
             failed_time = datetime.strptime(
-                        linha[2], '%Y-%m-%dT%H:%M:%SZ')
+                linha[2], '%Y-%m-%dT%H:%M:%SZ')
         if linha[1] == "success" and failed_id != None:
             success_id = linha[0]
             success_time = datetime.strptime(
-                        linha[2], '%Y-%m-%dT%H:%M:%SZ')
-            time_diff =  get_time_diff(failed_time, success_time)
-            row_data = [nameWithOwner, failed_id, failed_time, success_id, success_time, time_diff]
+                linha[2], '%Y-%m-%dT%H:%M:%SZ')
+            time_diff = get_time_diff(failed_time, success_time)
+            row_data = [nameWithOwner, failed_id, failed_time,
+                        success_id, success_time, time_diff]
             with open('csv2_intervalos.csv', mode='a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(row_data)
             failed_id = None
             failed_time = None
-    
+
     return
 
+
 def get_builds_info(nameWithOwner, file_path):
-    
+
     with open(file_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=';', quotechar='"')
         next(reader)
@@ -79,8 +84,9 @@ def get_builds_info(nameWithOwner, file_path):
         get_build_fix_efficiency(nameWithOwner, linhas)
     return
 
+
 def get_builds(nameWithOwner):
-    
+
     # define as variáveis para a autenticação e a URL do repositório
     owner = nameWithOwner.split("/")[0]
     name = nameWithOwner.split("/")[1]
@@ -92,7 +98,7 @@ def get_builds(nameWithOwner):
     headers = {
         'Authorization': f'Token {token}'
     }
-    
+
     page_number = 1
     # define os parâmetros da requisição para a API
 
@@ -103,7 +109,8 @@ def get_builds(nameWithOwner):
 
     # abre um arquivo CSV temporário para escrever os dados
     with tempfile.NamedTemporaryFile(mode='w', delete=False) as csv_file:
-        writer = csv.writer(csv_file, delimiter=';')
+        writer = csv.writer(csv_file, delimiter=';',
+                            lineterminator='\n')
 
         # escreve o cabeçalho do arquivo CSV
         writer.writerow(['idBuild', 'status da build', 'data/hora da build'])
@@ -132,17 +139,19 @@ def get_builds(nameWithOwner):
         # escreve os dados de cada build no arquivo CSV
         for run in runs:
             writer.writerow([run['id'], run['conclusion'], run['created_at']])
-            
+
     # imprime o nome do arquivo CSV temporário gerado
     print(f'O arquivo CSV temporário foi salvo em: {csv_file.name}')
 
     return csv_file.name
 
+
 def main():
     nameWithOwner = "jquery/jquery"  # temporario
-    # vai ter um for futuramente... 
+    # vai ter um for futuramente...
     file_path = get_builds(nameWithOwner)
     get_builds_info(nameWithOwner, file_path)
     return
-    
+
+
 main()

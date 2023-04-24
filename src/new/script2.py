@@ -23,8 +23,9 @@ def get_build_fix_efficiency(nameWithOwner, linhas):
     num_fixed_instantly = 0
     num_build_failure = 0
     previous_row = None
-    
+    num_total_builds = 0
     for i, linha in enumerate(linhas):
+        num_total_builds += 1
         if linha[1] == "failure":
             num_build_failure +=1 
             next_row = linhas[i+1]
@@ -34,7 +35,7 @@ def get_build_fix_efficiency(nameWithOwner, linhas):
 
     num_not_fixed_instantly = num_build_failure - num_fixed_instantly
 
-    row_data = [nameWithOwner, num_build_failure, num_fixed_instantly,num_not_fixed_instantly]
+    row_data = [nameWithOwner, num_total_builds, num_build_failure, num_fixed_instantly, num_not_fixed_instantly]
     with open('csv3_build_efficiency.csv', mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(row_data)
@@ -43,12 +44,10 @@ def get_build_fix_efficiency(nameWithOwner, linhas):
 
 def get_intervalos(nameWithOwner, linhas):
     
-    print(2)
     failed_id = None
     failed_time = None 
     
     for i, linha in enumerate(linhas):
-        print(linha)
         # 0 - id, 1 - status, 2 - data/hora
         if linha[1] == "failure" and failed_id == None:
             failed_id = linha[0]

@@ -1,2 +1,2 @@
-nameWithOwner,num_build_failure,num_fixed_instantly,num_not_fixed_instantly
-jquery/jquery,80,51,29
+nameWithOwner,num_total_builds,num_build_failure,num_fixed_instantly,num_not_fixed_instantly
+jquery/jquery,910,80,51,29

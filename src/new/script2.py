@@ -19,21 +19,21 @@ def get_time_diff(start_time, end_time):
     diff_minutes //= 60
     return "{:.0f}h{:02.0f}m".format(diff_hours, diff_minutes)
 
-def get_build_fix_efficiency(nameWithOwner, reader):
+def get_build_fix_efficiency(nameWithOwner, linhas):
     num_fixed_instantly = 0
     num_build_failure = 0
     previous_row = None
-    for row in reader:
-        
-        if row[1] == "failure":
+    
+    for i, linha in enumerate(linhas):
+        if linha[1] == "failure":
             num_build_failure +=1 
-            next_row = next(reader, None)
+            next_row = linhas[i+1]
             if next_row[1] == "success" and previous_row[1] == "success": 
                 num_fixed_instantly += 1
-                
-        previous_row = row
+        previous_row = linha
+
     num_not_fixed_instantly = num_build_failure - num_fixed_instantly
-            
+
     row_data = [nameWithOwner, num_build_failure, num_fixed_instantly,num_not_fixed_instantly]
     with open('csv3_build_efficiency.csv', mode='a', newline='') as file:
         writer = csv.writer(file)
@@ -71,8 +71,11 @@ def get_builds_info(nameWithOwner, file_path):
     with open(file_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=';', quotechar='"')
         next(reader)
+        linhas = []
+        for linha in reader:
+            linhas.append(linha)
         get_intervalos(nameWithOwner, reader)
-        get_build_fix_efficiency(nameWithOwner, reader)
+        get_build_fix_efficiency(nameWithOwner, linhas)
     return
 
 def get_builds(nameWithOwner):

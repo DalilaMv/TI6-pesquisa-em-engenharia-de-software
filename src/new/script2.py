@@ -41,29 +41,31 @@ def get_build_fix_efficiency(nameWithOwner, linhas):
             
     return
 
-def get_intervalos(nameWithOwner, reader):
+def get_intervalos(nameWithOwner, linhas):
     
+    print(2)
     failed_id = None
     failed_time = None 
     
-    for row in reader:  
+    for i, linha in enumerate(linhas):
+        print(linha)
         # 0 - id, 1 - status, 2 - data/hora
-        if row[1] == "failure" and failed_id == None:
-            failed_id = row[0]
+        if linha[1] == "failure" and failed_id == None:
+            failed_id = linha[0]
             failed_time = datetime.strptime(
-                        row[2], '%Y-%m-%dT%H:%M:%SZ')
-        if row[1] == "success" and failed_id != None:
-            success_id = row[0]
+                        linha[2], '%Y-%m-%dT%H:%M:%SZ')
+        if linha[1] == "success" and failed_id != None:
+            success_id = linha[0]
             success_time = datetime.strptime(
-                        row[2], '%Y-%m-%dT%H:%M:%SZ')
+                        linha[2], '%Y-%m-%dT%H:%M:%SZ')
             time_diff =  get_time_diff(failed_time, success_time)
-            row_data = [nameWithOwner, failed_id, success_id, time_diff]
+            row_data = [nameWithOwner, failed_id, failed_time, success_id, success_time, time_diff]
             with open('csv2_intervalos.csv', mode='a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(row_data)
             failed_id = None
             failed_time = None
-
+    
     return
 
 def get_builds_info(nameWithOwner, file_path):
@@ -74,7 +76,7 @@ def get_builds_info(nameWithOwner, file_path):
         linhas = []
         for linha in reader:
             linhas.append(linha)
-        get_intervalos(nameWithOwner, reader)
+        get_intervalos(nameWithOwner, linhas)
         get_build_fix_efficiency(nameWithOwner, linhas)
     return
 

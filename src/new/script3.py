@@ -49,7 +49,13 @@ def get_events(nameWithOwner, since_date, until_date):
 
 
 def main():
+    file_name = "csv2_intervalos.csv"
+    df = pd.read_csv(file_name)
     get_events("jquery/jquery", "2023-04-04 22:09:54", "2023-04-04 22:12:43")
+    # for index, row in df.iterrows():
+    #     breakpoint()
+    #     get_events(row[0], row[2], row[4])
+    #     print(index)
     return
 
 

@@ -1,5 +1,12 @@
 import requests
 import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+token = os.environ["token"]
+repositories = []
 
 
 # Define a query para obter os 1000 repositórios mais populares
@@ -18,11 +25,9 @@ query = """
         }
     }
 """
-
-
 headers = {
-  'Authorization': 'Bearer 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',
-  'Content-Type': 'application/json'
+    'Authorization': f'Token {token}',
+    'Content-Type': 'application/json'
 }
 
 # Faz a requisição para a API do GitHub

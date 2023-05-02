@@ -1,21 +1,25 @@
 import csv
-from datetime import datetime
 import pandas as pd
 import requests
-import json
+from pymongo import MongoClient
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-def get_events(nameWithOwner, since_date, until_date):
+CONNECTION_STRING = os.environ["CONNECTION_STRING"]
+DB_NAME = os.environ["DB_NAME"]
+
+def get_events(nameWithOwner):
     owner = nameWithOwner.split("/")[0]
     name = nameWithOwner.split("/")[1]
 
-    # define a data de início e fim do intervalo de tempo
-    since_d = datetime.strptime(since_date, "%Y-%m-%d %H:%M:%S")
-    until_d = datetime.strptime(until_date, "%Y-%m-%d %H:%M:%S")
+    try:
+        client = MongoClient(CONNECTION_STRING)
+        db = client[DB_NAME]
+    except:
+        print("Não foi possível conectar-se ao servidor do MongoDB:")
 
-    # faz uma requisição para obter informações sobre os eventos
-
-    events = []
     page = 1
     per_page = 100
     while True:
@@ -25,38 +29,27 @@ def get_events(nameWithOwner, since_date, until_date):
 
         if not data:
             break
-        for event in data:
-            event_date = datetime.strptime(
-                event['created_at'], '%Y-%m-%dT%H:%M:%SZ')
-            if event_date >= since_d and event_date < until_d:
-                events.append(event)
 
-        with open('teste.csv', mode='a', newline='', encoding="utf-8") as file:
-            writer = csv.writer(file)
-            for item in events:
-                row = [item['id'], json.dumps(item, indent=2)]
-                writer.writerow(row)
+        events = [event for event in data ]
+        collection = db[nameWithOwner]
+        print(collection)
+        collection.insert_many(events)
 
-        print(response.links)
-
-        # verifica se há mais páginas e atualiza o contador da página
         if 'next' in response.links:
             page += 1
         else:
             break
 
-    return data
-
 
 def main():
-    file_name = "csv2_intervalos.csv"
-    df = pd.read_csv(file_name)
-    get_events("jquery/jquery", "2023-04-04 22:09:54", "2023-04-04 22:12:43")
-    # for index, row in df.iterrows():
-    #     breakpoint()
-    #     get_events(row[0], row[2], row[4])
-    #     print(index)
-    return
+    with open("allRepositories.csv", "r") as f:
+        reader = csv.reader(f)
+        next(reader)  
+        for row in reader:
+            nameWithOwner = row[0]
+            print(f"Obtendo eventos para {nameWithOwner}")
+            get_events(nameWithOwner)
+
 
 
 main()

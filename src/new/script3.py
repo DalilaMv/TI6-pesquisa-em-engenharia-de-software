@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 import pandas as pd
 import requests
 from pymongo import MongoClient
@@ -20,21 +21,27 @@ def get_events(nameWithOwner):
     except:
         print("Não foi possível conectar-se ao servidor do MongoDB:")
 
+    collection = db[nameWithOwner]
     page = 1
     per_page = 100
     while True:
-        response = requests.get(f"https://api.github.com/repos/{owner}/{name}/events", params={
+        # response = requests.get(f"https://api.github.com/repos/{owner}/{name}/events", params={
+        #     "page": page, "per_page": per_page, "include": "user"})
+        response = requests.get(f"https://api.github.com/repos/{owner}/{name}/actions/runs", params={
             "page": page, "per_page": per_page, "include": "user"})
         data = response.json()
-
+        
         if not data:
             break
 
-        events = [event for event in data ]
-        collection = db[nameWithOwner]
-        print(collection)
-        collection.insert_many(events)
-
+        # events = [event for event in data ]
+        # for event in events:
+        #     event["created_at"] = datetime.strptime(event["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+        try:
+            collection.insert_many(data["workflow_runs"])
+        except Exception as err:
+            print(err)
+            breakpoint()
         if 'next' in response.links:
             page += 1
         else:

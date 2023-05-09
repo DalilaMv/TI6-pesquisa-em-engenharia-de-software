@@ -147,10 +147,13 @@ def get_builds(nameWithOwner):
 
 
 def main():
-    nameWithOwner = "jquery/jquery"  # temporario
-    # vai ter um for futuramente...
-    file_path = get_builds(nameWithOwner)
-    get_builds_info(nameWithOwner, file_path)
+    with open("./repos_list.csv", "r") as f:
+        reader = csv.reader(f)
+        next(reader)  
+        for row in reader:
+            nameWithOwner = row[0]
+            file_path = get_builds(nameWithOwner)
+            get_builds_info(nameWithOwner, file_path)
     return
 
 

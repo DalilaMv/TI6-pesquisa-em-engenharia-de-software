@@ -1,5 +1,6 @@
 
 from datetime import datetime
+import random
 import requests
 import csv
 import tempfile
@@ -9,7 +10,7 @@ import pandas as pd
 
 load_dotenv()
 
-token = os.environ["token"]
+tokens = [os.environ["token"], os.environ["token3"], os.environ["token5"]]
 repositories = []
 
 
@@ -80,12 +81,13 @@ def get_builds_info(nameWithOwner, file_path):
         linhas = []
         for linha in reader:
             linhas.append(linha)
-        get_intervalos(nameWithOwner, linhas)
+        # get_intervalos(nameWithOwner, linhas)
         get_build_fix_efficiency(nameWithOwner, linhas)
     return
 
 
 def get_builds(nameWithOwner):
+    token = random.choice(tokens)
 
     # define as variáveis para a autenticação e a URL do repositório
     owner = nameWithOwner.split("/")[0]
@@ -132,6 +134,7 @@ def get_builds(nameWithOwner):
             response = requests.get(next_url, headers=headers)
             data = response.json()
             runs += data['workflow_runs']
+            token = random.choice(tokens)
 
         # ordena as builds da mais antiga para a mais recente
         runs = sorted(runs, key=lambda r: r['created_at'])
@@ -147,13 +150,29 @@ def get_builds(nameWithOwner):
 
 
 def main():
-    with open("./repos_list.csv", "r") as f:
+    with open("./repos_new_list.csv", "r") as f:
         reader = csv.reader(f)
-        next(reader)  
+        next(reader)
+
+        token = random.choice(tokens)
+        headers = {
+            'Authorization': f'Token {token}'
+        }
         for row in reader:
             nameWithOwner = row[0]
-            file_path = get_builds(nameWithOwner)
-            get_builds_info(nameWithOwner, file_path)
+            owner = nameWithOwner.split("/")[0]
+            name = nameWithOwner.split("/")[1]
+            url = f'https://api.github.com/repos/{owner}/{name}/actions/runs'
+            response = requests.get(url, headers=headers)
+            data = response.json()
+            numBuilds = data['total_count']
+            with open('num_builds_temp.csv', mode='a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([nameWithOwner, numBuilds])
+            token = random.choice(tokens)
+
+        # file_path = get_builds(nameWithOwner)
+        # get_builds_info(nameWithOwner, file_path)
     return
 
 

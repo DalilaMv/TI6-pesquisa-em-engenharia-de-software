@@ -150,29 +150,36 @@ def get_builds(nameWithOwner):
 
 
 def main():
+
     with open("./repos_new_list.csv", "r") as f:
         reader = csv.reader(f)
         next(reader)
-
-        token = random.choice(tokens)
-        headers = {
-            'Authorization': f'Token {token}'
-        }
         for row in reader:
             nameWithOwner = row[0]
-            owner = nameWithOwner.split("/")[0]
-            name = nameWithOwner.split("/")[1]
-            url = f'https://api.github.com/repos/{owner}/{name}/actions/runs'
-            response = requests.get(url, headers=headers)
-            data = response.json()
-            numBuilds = data['total_count']
-            with open('num_builds_temp.csv', mode='a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow([nameWithOwner, numBuilds])
-            token = random.choice(tokens)
+            file_path = get_builds(nameWithOwner)
+            get_builds_info(nameWithOwner, file_path)
 
-        # file_path = get_builds(nameWithOwner)
-        # get_builds_info(nameWithOwner, file_path)
+    # with open("./repos_new_list.csv", "r") as f:
+    #     reader = csv.reader(f)
+    #     next(reader)
+
+    #     token = random.choice(tokens)
+    #     headers = {
+    #         'Authorization': f'Token {token}'
+    #     }
+    #     for row in reader:
+    #         nameWithOwner = row[0]
+    #         owner = nameWithOwner.split("/")[0]
+    #         name = nameWithOwner.split("/")[1]
+    #         url = f'https://api.github.com/repos/{owner}/{name}/actions/runs'
+    #         response = requests.get(url, headers=headers)
+    #         data = response.json()
+    #         numBuilds = data['total_count']
+    #         with open('num_builds_temp.csv', mode='a', newline='') as file:
+    #             writer = csv.writer(file)
+    #             writer.writerow([nameWithOwner, numBuilds])
+    #         token = random.choice(tokens)
+
     return
 
 

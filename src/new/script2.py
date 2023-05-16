@@ -1,6 +1,7 @@
 
 from datetime import datetime
 import random
+from time import sleep
 import requests
 import csv
 import tempfile
@@ -10,7 +11,7 @@ import pandas as pd
 
 load_dotenv()
 
-tokens = [os.environ["token"], os.environ["token3"], os.environ["token5"]]
+tokens = [os.environ["newToken1"], os.environ["newToken2"]]
 repositories = []
 
 
@@ -30,9 +31,10 @@ def get_build_fix_efficiency(nameWithOwner, linhas):
         num_total_builds += 1
         if linha[1] == "failure":
             num_build_failure += 1
-            next_row = linhas[i+1]
-            if next_row[1] == "success" and previous_row[1] == "success":
-                num_fixed_instantly += 1
+            if i+1 < len(linhas):
+                next_row = linhas[i+1]
+                if i == 0 and next_row[1] == "success" or next_row[1] == "success" and previous_row[1] == "success":
+                    num_fixed_instantly += 1
         previous_row = linha
 
     num_not_fixed_instantly = num_build_failure - num_fixed_instantly
@@ -81,7 +83,7 @@ def get_builds_info(nameWithOwner, file_path):
         linhas = []
         for linha in reader:
             linhas.append(linha)
-        # get_intervalos(nameWithOwner, linhas)
+        get_intervalos(nameWithOwner, linhas)
         get_build_fix_efficiency(nameWithOwner, linhas)
     return
 
@@ -117,6 +119,7 @@ def get_builds(nameWithOwner):
         # escreve o cabeçalho do arquivo CSV
         writer.writerow(['idBuild', 'status da build', 'data/hora da build'])
 
+        sleep(1.0)
         # faz a primeira requisição GET para obter as informações de builds
         response = requests.get(url, params=params, headers=headers)
 
@@ -151,7 +154,7 @@ def get_builds(nameWithOwner):
 
 def main():
 
-    with open("./repos_new_list.csv", "r") as f:
+    with open("./repos_1de3.csv", "r") as f:
         reader = csv.reader(f)
         next(reader)
         for row in reader:

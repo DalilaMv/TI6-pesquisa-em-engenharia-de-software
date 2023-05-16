@@ -57,15 +57,20 @@ def get_intervalos(nameWithOwner, linhas):
         # 0 - id, 1 - status, 2 - data/hora
         if linha[1] == "failure" and failed_id == None:
             failed_id = linha[0]
+            userIdFalha = linha[3]
             failed_time = datetime.strptime(
                 linha[2], '%Y-%m-%dT%H:%M:%SZ')
         if linha[1] == "success" and failed_id != None:
             success_id = linha[0]
+            userIdSucesso = linha[3]
+            is_same_user = False
+            if userIdFalha == userIdSucesso:
+                is_same_user = True
             success_time = datetime.strptime(
                 linha[2], '%Y-%m-%dT%H:%M:%SZ')
             time_diff = get_time_diff(failed_time, success_time)
             row_data = [nameWithOwner, failed_id, failed_time,
-                        success_id, success_time, time_diff]
+                        success_id, success_time, time_diff, is_same_user]
             with open('csv2_intervalos.csv', mode='a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(row_data)
@@ -117,7 +122,8 @@ def get_builds(nameWithOwner):
                             lineterminator='\n')
 
         # escreve o cabeçalho do arquivo CSV
-        writer.writerow(['idBuild', 'status da build', 'data/hora da build'])
+        writer.writerow(['idBuild', 'status da build',
+                        'data/hora da build', 'userId'])
 
         sleep(1.0)
         # faz a primeira requisição GET para obter as informações de builds
@@ -144,7 +150,8 @@ def get_builds(nameWithOwner):
 
         # escreve os dados de cada build no arquivo CSV
         for run in runs:
-            writer.writerow([run['id'], run['conclusion'], run['created_at']])
+            writer.writerow([run['id'], run['conclusion'],
+                            run['created_at'], run['actor']['id']])
 
     # imprime o nome do arquivo CSV temporário gerado
     print(f'O arquivo CSV temporário foi salvo em: {csv_file.name}')
@@ -154,7 +161,7 @@ def get_builds(nameWithOwner):
 
 def main():
 
-    with open("./repos_1de3.csv", "r") as f:
+    with open("./repos_new_list.csv", "r") as f:
         reader = csv.reader(f)
         next(reader)
         for row in reader:
